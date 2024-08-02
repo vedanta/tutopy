@@ -1,0 +1,194 @@
+name: Python Tutorial System
+
+on:
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: 'Choose a Python topic to learn'
+        required: true
+        type: choice
+        options:
+        - basics
+        - data_structures
+        - functions
+        - oop
+        - file_handling
+      difficulty:
+        description: 'Choose difficulty level'
+        required: true
+        type: choice
+        options:
+        - beginner
+        - intermediate
+        - advanced
+
+jobs:
+  present_tutorial:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Present Tutorial
+      run: |
+        echo "Welcome to the Python Tutorial System!"
+        echo "You've selected the topic: ${{ github.event.inputs.topic }}"
+        echo "Difficulty level: ${{ github.event.inputs.difficulty }}"
+        echo ""
+        echo "Here's your tutorial:"
+        echo "----------------------------------------"
+        
+        if [[ "${{ github.event.inputs.topic }}" == "basics" ]]; then
+          if [[ "${{ github.event.inputs.difficulty }}" == "beginner" ]]; then
+            echo "Python Basics for Beginners:"
+            echo "1. Print 'Hello, World!'"
+            echo "print('Hello, World!')"
+            echo ""
+            echo "2. Variables"
+            echo "x = 5"
+            echo "y = 'Hello'"
+            echo "print(x)"
+            echo "print(y)"
+          elif [[ "${{ github.event.inputs.difficulty }}" == "intermediate" ]]; then
+            echo "Intermediate Python Basics:"
+            echo "1. String formatting"
+            echo "name = 'Alice'"
+            echo "age = 30"
+            echo "print(f'{name} is {age} years old')"
+          else
+            echo "Advanced Python Basics:"
+            echo "1. List comprehensions"
+            echo "squares = [x**2 for x in range(10)]"
+            echo "print(squares)"
+          fi
+        elif [[ "${{ github.event.inputs.topic }}" == "data_structures" ]]; then
+          if [[ "${{ github.event.inputs.difficulty }}" == "beginner" ]]; then
+            echo "Basic Python Data Structures:"
+            echo "1. Lists"
+            echo "fruits = ['apple', 'banana', 'cherry']"
+            echo "print(fruits[0])  # Outputs: apple"
+          elif [[ "${{ github.event.inputs.difficulty }}" == "intermediate" ]]; then
+            echo "Intermediate Python Data Structures:"
+            echo "1. Dictionaries"
+            echo "person = {'name': 'John', 'age': 30, 'city': 'New York'}"
+            echo "print(person['name'])  # Outputs: John"
+          else
+            echo "Advanced Python Data Structures:"
+            echo "1. Named tuples"
+            echo "from collections import namedtuple"
+            echo "Point = namedtuple('Point', ['x', 'y'])"
+            echo "p = Point(11, y=22)"
+            echo "print(p.x, p.y)  # Outputs: 11 22"
+          fi
+        elif [[ "${{ github.event.inputs.topic }}" == "functions" ]]; then
+          if [[ "${{ github.event.inputs.difficulty }}" == "beginner" ]]; then
+            echo "Basic Python Functions:"
+            echo "1. Defining and calling a function"
+            echo "def greet(name):"
+            echo "    print(f'Hello, {name}!')"
+            echo ""
+            echo "greet('Alice')  # Outputs: Hello, Alice!"
+          elif [[ "${{ github.event.inputs.difficulty }}" == "intermediate" ]]; then
+            echo "Intermediate Python Functions:"
+            echo "1. Lambda functions"
+            echo "square = lambda x: x**2"
+            echo "print(square(5))  # Outputs: 25"
+          else
+            echo "Advanced Python Functions:"
+            echo "1. Decorators"
+            echo "def uppercase_decorator(function):"
+            echo "    def wrapper():"
+            echo "        result = function()"
+            echo "        return result.upper()"
+            echo "    return wrapper"
+            echo ""
+            echo "@uppercase_decorator"
+            echo "def greet():"
+            echo "    return 'hello, world!'"
+            echo ""
+            echo "print(greet())  # Outputs: HELLO, WORLD!"
+          fi
+        elif [[ "${{ github.event.inputs.topic }}" == "oop" ]]; then
+          if [[ "${{ github.event.inputs.difficulty }}" == "beginner" ]]; then
+            echo "Basic Python OOP:"
+            echo "1. Defining a simple class"
+            echo "class Dog:"
+            echo "    def __init__(self, name):"
+            echo "        self.name = name"
+            echo ""
+            echo "    def bark(self):"
+            echo "        print('Woof!')"
+            echo ""
+            echo "my_dog = Dog('Buddy')"
+            echo "print(my_dog.name)  # Outputs: Buddy"
+            echo "my_dog.bark()  # Outputs: Woof!"
+          elif [[ "${{ github.event.inputs.difficulty }}" == "intermediate" ]]; then
+            echo "Intermediate Python OOP:"
+            echo "1. Inheritance"
+            echo "class Animal:"
+            echo "    def __init__(self, name):"
+            echo "        self.name = name"
+            echo ""
+            echo "class Dog(Animal):"
+            echo "    def bark(self):"
+            echo "        print('Woof!')"
+            echo ""
+            echo "my_dog = Dog('Buddy')"
+            echo "print(my_dog.name)  # Outputs: Buddy"
+            echo "my_dog.bark()  # Outputs: Woof!"
+          else
+            echo "Advanced Python OOP:"
+            echo "1. Metaclasses"
+            echo "class Meta(type):"
+            echo "    def __new__(cls, name, bases, attrs):"
+            echo "        attrs['custom_attribute'] = 'Hello from metaclass!'"
+            echo "        return super().__new__(cls, name, bases, attrs)"
+            echo ""
+            echo "class MyClass(metaclass=Meta):"
+            echo "    pass"
+            echo ""
+            echo "obj = MyClass()"
+            echo "print(obj.custom_attribute)  # Outputs: Hello from metaclass!"
+          fi
+        elif [[ "${{ github.event.inputs.topic }}" == "file_handling" ]]; then
+          if [[ "${{ github.event.inputs.difficulty }}" == "beginner" ]]; then
+            echo "Basic Python File Handling:"
+            echo "1. Reading a file"
+            echo "with open('example.txt', 'r') as file:"
+            echo "    content = file.read()"
+            echo "    print(content)"
+          elif [[ "${{ github.event.inputs.difficulty }}" == "intermediate" ]]; then
+            echo "Intermediate Python File Handling:"
+            echo "1. Writing to a file"
+            echo "with open('example.txt', 'w') as file:"
+            echo "    file.write('Hello, World!')"
+          else
+            echo "Advanced Python File Handling:"
+            echo "1. Using context managers"
+            echo "from contextlib import contextmanager"
+            echo ""
+            echo "@contextmanager"
+            echo "def file_manager(filename, mode):"
+            echo "    try:"
+            echo "        f = open(filename, mode)"
+            echo "        yield f"
+            echo "    finally:"
+            echo "        f.close()"
+            echo ""
+            echo "with file_manager('example.txt', 'w') as f:"
+            echo "    f.write('Hello, World!')"
+          fi
+        fi
+        
+        echo "----------------------------------------"
+        echo "Tutorial complete! Try running the code and experimenting with it."
+
+    - name: Provide Next Steps
+      run: |
+        echo "Next steps:"
+        echo "1. Try modifying the code and see what happens."
+        echo "2. Research more about the topic online."
+        echo "3. Practice writing your own Python scripts."
+        echo "4. Run this workflow again with a different topic or difficulty level."
