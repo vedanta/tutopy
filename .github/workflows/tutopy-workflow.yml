@@ -36,8 +36,8 @@ jobs:
 
     - name: Convert to Jupyter Notebook
       run: |
-        TUTORIAL_FILE=$(ls *_tutorial.py)
-        if [ -f "$TUTORIAL_FILE" ]; then
+        TUTORIAL_FILE=$(ls *_tutorial.py 2>/dev/null)
+        if [ -n "$TUTORIAL_FILE" ]; then
           python jinc.py "$TUTORIAL_FILE"
           mv tutorial.ipynb ${INPUT_TOPIC}_tutorial.ipynb
         else
@@ -46,6 +46,7 @@ jobs:
         fi
 
     - name: Commit files
+      if: success()
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
@@ -53,6 +54,7 @@ jobs:
         git commit -m "Add generated tutorial and notebook for ${INPUT_TOPIC}" -a
 
     - name: Push changes
+      if: success()
       uses: ad-m/github-push-action@master
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
