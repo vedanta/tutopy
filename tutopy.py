@@ -8,13 +8,15 @@ The tutorials are created in the JINC format for easy conversion to Jupyter note
 
 import os
 import requests
-import random
+import sys
+import json
 
 def generate_tutorial_with_claude(topic):
     api_key = os.environ.get('CLAUDE_API_KEY')
     if not api_key:
-        raise ValueError("CLAUDE_API_KEY not set in environment variables")
-    
+        print("Error: CLAUDE_API_KEY not set in environment variables", file=sys.stderr)
+        return None
+
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {api_key}"
@@ -50,34 +52,39 @@ def generate_tutorial_with_claude(topic):
     
     data = {
         "model": "claude-3-opus-20240229",
-        "prompt": prompt,
+        "messages": [
+            {"role": "user", "content": prompt}
+        ],
         "max_tokens": 3000,
         "temperature": 0.7
     }
     
-    response = requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=data)
-    response.raise_for_status()
-    
-    return response.json()['content'][0]['text']
+    try:
+        response = requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=data)
+        response.raise_for_status()
+        return response.json()['content'][0]['text']
+    except requests.exceptions.RequestException as e:
+        print(f"Error calling Claude API: {e}", file=sys.stderr)
+        if response:
+            print(f"Response content: {response.text}", file=sys.stderr)
+        return None
 
 def main():
     topic = os.environ.get('INPUT_TOPIC')
     if not topic:
-        raise ValueError("No topic provided. Please set the 'topic' input in your GitHub Actions workflow.")
+        print("Error: No topic provided. Please set the 'topic' input in your GitHub Actions workflow.", file=sys.stderr)
+        sys.exit(1)
 
-    try:
-        tutorial_content = generate_tutorial_with_claude(topic)
-        
-        # Save the tutorial content to a file
-        filename = f"{topic.replace(' ', '_').lower()}_tutorial.py"
-        with open(filename, 'w') as f:
-            f.write(tutorial_content)
+    tutorial_content = generate_tutorial_with_claude(topic)
+    if tutorial_content is None:
+        print("Failed to generate tutorial content.", file=sys.stderr)
+        sys.exit(1)
 
-        print(f"Tutorial for '{topic}' has been generated and saved as '{filename}'.")
-    except requests.exceptions.RequestException as e:
-        print(f"Error calling Claude API: {e}")
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+    filename = f"{topic.replace(' ', '_').lower()}_tutorial.py"
+    with open(filename, 'w') as f:
+        f.write(tutorial_content)
+
+    print(f"Tutorial for '{topic}' has been generated and saved as '{filename}'.")
 
 if __name__ == "__main__":
     main()
