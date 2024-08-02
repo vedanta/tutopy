@@ -4,8 +4,6 @@ TutoPy: Automatic Python Tutorial Generator
 
 This script uses Claude AI to generate Python tutorials based on user input.
 The tutorials are created in the JINC format for easy conversion to Jupyter notebooks.
-
-This version is designed to work with GitHub Actions and integrates with Claude AI.
 """
 
 import os
@@ -24,7 +22,7 @@ def generate_tutorial_with_claude(topic):
     
     prompt = f"""Generate a Python tutorial on {topic} with examples inspired by 80s and 90s pop culture. 
     Include three difficulty levels: simple, intermediate, and expert. 
-    For each difficulty level, provide three examples. 
+    For each difficulty level, provide three examples with actual Python code.
     Use the following format:
 
     #!/usr/bin/env python3
@@ -42,10 +40,10 @@ def generate_tutorial_with_claude(topic):
 
     # CODE CELL
     # Example 1: [Pop culture reference]
-    # Your code here
+    [Include actual Python code here]
 
     # MARKDOWN CELL
-    Explanation of the above example goes here.
+    [Explanation of the above example]
 
     [Repeat for Examples 2 and 3, then for Intermediate and Expert levels]
     """
@@ -63,7 +61,6 @@ def generate_tutorial_with_claude(topic):
     return response.json()['content'][0]['text']
 
 def main():
-    # Get the topic from GitHub Actions input
     topic = os.environ.get('INPUT_TOPIC')
     if not topic:
         raise ValueError("No topic provided. Please set the 'topic' input in your GitHub Actions workflow.")
@@ -72,10 +69,11 @@ def main():
         tutorial_content = generate_tutorial_with_claude(topic)
         
         # Save the tutorial content to a file
-        with open('tutorial.py', 'w') as f:
+        filename = f"{topic.replace(' ', '_').lower()}_tutorial.py"
+        with open(filename, 'w') as f:
             f.write(tutorial_content)
 
-        print(f"Tutorial for '{topic}' has been generated and saved as 'tutorial.py'.")
+        print(f"Tutorial for '{topic}' has been generated and saved as '{filename}'.")
     except requests.exceptions.RequestException as e:
         print(f"Error calling Claude API: {e}")
     except Exception as e:
