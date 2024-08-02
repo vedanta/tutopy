@@ -31,18 +31,20 @@ jobs:
         CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
       run: python tutopy.py
 
-    - name: Upload Tutorial
-      uses: actions/upload-artifact@v4
-      with:
-        name: python-tutorial
-        path: tutorial.py
-
     - name: Convert to Jupyter Notebook
       run: |
-        python jinc.py tutorial.py
-        
-    - name: Upload Jupyter Notebook
-      uses: actions/upload-artifact@v4
+        python jinc.py ${INPUT_TOPIC}_tutorial.py
+        mv tutorial.ipynb ${INPUT_TOPIC}_tutorial.ipynb
+
+    - name: Commit files
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add ${INPUT_TOPIC}_tutorial.py ${INPUT_TOPIC}_tutorial.ipynb
+        git commit -m "Add generated tutorial and notebook for ${INPUT_TOPIC}" -a
+
+    - name: Push changes
+      uses: ad-m/github-push-action@master
       with:
-        name: jupyter-notebook
-        path: tutorial.ipynb
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}
