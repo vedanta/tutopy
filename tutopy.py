@@ -5,61 +5,62 @@ TutoPy: Automatic Python Tutorial Generator
 This script uses Claude AI to generate Python tutorials based on user input.
 The tutorials are created in the JINC format for easy conversion to Jupyter notebooks.
 
-This version is designed to work with GitHub Actions.
+This version is designed to work with GitHub Actions and integrates with Claude AI.
 """
 
 import os
+import requests
 import random
 
-# Placeholder for Claude AI integration
 def generate_tutorial_with_claude(topic):
-    return f"Generated tutorial content for {topic}"
-
-def create_example(difficulty, topic):
-    pop_culture_references = {
-        'bands': ['The Beatles', 'Queen', 'Nirvana', 'Guns N\' Roses', 'Bon Jovi'],
-        'songs': ['Billie Jean', 'Sweet Child O\' Mine', 'Smells Like Teen Spirit', 'Like a Prayer', 'Take On Me'],
-        'movies': ['Back to the Future', 'The Breakfast Club', 'Jurassic Park', 'Pulp Fiction', 'The Matrix'],
-        'food': ['Pop Rocks', 'Fruit Roll-Ups', 'Pizza Bagels', 'Dunkaroos', 'Gushers'],
-        'tv_shows': ['Friends', 'The Simpsons', 'Seinfeld', 'The X-Files', 'Saved by the Bell']
+    api_key = os.environ.get('CLAUDE_API_KEY')
+    if not api_key:
+        raise ValueError("CLAUDE_API_KEY not set in environment variables")
+    
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {api_key}"
     }
+    
+    prompt = f"""Generate a Python tutorial on {topic} with examples inspired by 80s and 90s pop culture. 
+    Include three difficulty levels: simple, intermediate, and expert. 
+    For each difficulty level, provide three examples. 
+    Use the following format:
 
-    reference_type = random.choice(list(pop_culture_references.keys()))
-    reference = random.choice(pop_culture_references[reference_type])
+    #!/usr/bin/env python3
+    #  DESCRIPTION This is a tutorial on {topic}, featuring examples inspired by 80s and 90s pop culture.
 
-    return f"{difficulty.capitalize()} example for {topic} using {reference}"
+    # MARKDOWN CELL
+    # {topic.capitalize()} Tutorial
 
-def generate_tutorial(topic):
-    tutorial = f"""#!/usr/bin/env python3
-#  DESCRIPTION This is a tutorial on {topic}, featuring examples inspired by 80s and 90s pop culture.
+    This tutorial will guide you through {topic} with examples inspired by 80s and 90s pop culture.
 
-# MARKDOWN CELL
-# {topic.capitalize()} Tutorial
+    # MARKDOWN CELL
+    ## Simple Examples
 
-This tutorial will guide you through {topic} with examples inspired by 80s and 90s pop culture.
+    Here are three simple examples of {topic}:
 
-"""
+    # CODE CELL
+    # Example 1: [Pop culture reference]
+    # Your code here
 
-    difficulties = ['simple', 'intermediate', 'expert']
-    for difficulty in difficulties:
-        tutorial += f"""# MARKDOWN CELL
-## {difficulty.capitalize()} Examples
+    # MARKDOWN CELL
+    Explanation of the above example goes here.
 
-Here are three {difficulty} examples of {topic}:
-
-"""
-        for i in range(1, 4):
-            example = create_example(difficulty, topic)
-            tutorial += f"""# CODE CELL
-# Example {i}: {example}
-# Your code here
-
-# MARKDOWN CELL
-Explanation of the above example goes here.
-
-"""
-
-    return tutorial
+    [Repeat for Examples 2 and 3, then for Intermediate and Expert levels]
+    """
+    
+    data = {
+        "model": "claude-3-opus-20240229",
+        "prompt": prompt,
+        "max_tokens": 3000,
+        "temperature": 0.7
+    }
+    
+    response = requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=data)
+    response.raise_for_status()
+    
+    return response.json()['content'][0]['text']
 
 def main():
     # Get the topic from GitHub Actions input
@@ -67,13 +68,18 @@ def main():
     if not topic:
         raise ValueError("No topic provided. Please set the 'topic' input in your GitHub Actions workflow.")
 
-    tutorial_content = generate_tutorial(topic)
-    
-    # Save the tutorial content to a file
-    with open('tutorial.py', 'w') as f:
-        f.write(tutorial_content)
+    try:
+        tutorial_content = generate_tutorial_with_claude(topic)
+        
+        # Save the tutorial content to a file
+        with open('tutorial.py', 'w') as f:
+            f.write(tutorial_content)
 
-    print(f"Tutorial for '{topic}' has been generated and saved as 'tutorial.py'.")
+        print(f"Tutorial for '{topic}' has been generated and saved as 'tutorial.py'.")
+    except requests.exceptions.RequestException as e:
+        print(f"Error calling Claude API: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
 
 if __name__ == "__main__":
     main()
