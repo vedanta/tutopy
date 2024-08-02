@@ -1,0 +1,47 @@
+name: TutoPy Tutorial Generator
+
+on:
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: 'Python topic for the tutorial'
+        required: true
+        type: string
+
+jobs:
+  generate_tutorial:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install nbformat  # Add any other dependencies here
+
+    - name: Generate Tutorial
+      env:
+        INPUT_TOPIC: ${{ github.event.inputs.topic }}
+      run: python tutopy.py
+
+    - name: Upload Tutorial
+      uses: actions/upload-artifact@v2
+      with:
+        name: python-tutorial
+        path: tutorial.py
+
+    - name: Convert to Jupyter Notebook
+      run: |
+        python jinc.py tutorial.py
+        
+    - name: Upload Jupyter Notebook
+      uses: actions/upload-artifact@v2
+      with:
+        name: jupyter-notebook
+        path: tutorial.ipynb
